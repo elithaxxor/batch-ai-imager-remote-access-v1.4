@@ -1,10 +1,18 @@
 
-# AI Image Analyzer
+# AI Image Analyzer v1.4
 
 ![AI Image Analyzer](https://img.shields.io/badge/AI-Image%20Analyzer-blue?style=for-the-badge&logo=openai)
 
 A powerful AI-powered application that processes images to identify objects and generate detailed descriptions using OpenAI's vision capabilities.
 
+### TODO: 
+1. Expand API functionality, so users can fine-tune their experiance. Im looking into Sonar, as far as open API goes, and train/vectorize models from as an added bonus to machine learning. However, this is an MVP, and subject to change per the clients need.
+2. Unit Test. Unit Test. Unit Test.
+3. Ensure proper database persistance and rotation.
+4. Package a .deb and .installer for linux and macos respectivly
+***---> This is the MVP, and subject to change.****
+
+   
 ## 📋 Table of Contents
 
 - [Overview](#overview)
