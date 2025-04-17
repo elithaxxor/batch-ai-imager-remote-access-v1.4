@@ -1,0 +1,63 @@
++-------------------+     +--------------------+     +--------------------+
+|                   |     |                    |     |                    |
+|   Image Folders   |---->|   Preprocessing    |---->|   OpenAI Analysis  |
+|                   |     |                    |     |                    |
++-------------------+     +--------------------+     +--------------------+
+                                                              |
+                                                              |
+                                                              v
++-------------------+     +--------------------+     +--------------------+
+|                   |     |                    |     |                    |
+|   User Interface  |<----|   Search Engine    |<----|   PostgreSQL DB    |
+|                   |     |                    |     |                    |
++-------------------+     +--------------------+     +--------------------+
+        ^                                                    ^
+        |                                                    |
+        |                                                    |
+        +----------------------------------------------------+
+                              Results Flow
+
+AI Image Analyzer - Data Flow Architecture
+
+1. Image Collection:
+   - Local directories containing image files
+   - Folder-based organization (up to 200 folders)
+   - Support for JPG, JPEG, PNG formats
+
+2. Preprocessing Pipeline:
+   - Image validation and file type checking
+   - Base64 encoding for API submission
+   - Image metadata extraction
+
+3. AI Analysis (OpenAI GPT-4o):
+   - Object identification
+   - Detailed description generation
+   - Historical context analysis
+   - Confidence scoring
+
+4. Database Storage:
+   - Structured storage in PostgreSQL
+   - Folder and image relationships
+   - Full text search capabilities
+   - Analysis metadata
+
+5. User Interface Layer:
+   - Process page: Image processing interface
+   - History page: Browse previous analyses
+   - Search page: Find specific images
+   - Results display with image preview
+
+6. Export Functionality:
+   - CSV export for spreadsheet analysis
+   - Excel export for comprehensive reporting
+
+Data Model:
+   - Folders (id, name, path, processed_at)
+   - Images (id, folder_id, file_name, file_path, object_name, description, confidence, processed_at)
+
+Processing Workflow:
+   1. User selects folder with images
+   2. System checks for existing analysis in database
+   3. New images are sent to OpenAI for processing
+   4. Results are stored in database
+   5. User can view, search, and export results

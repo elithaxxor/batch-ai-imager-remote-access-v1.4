@@ -1,0 +1,23 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "fpdf>=1.7.2",
+    "openai>=1.73.0",
+    "pandas>=2.2.3",
+    "pillow-heif>=0.22.0",
+    "pillow>=11.2.1",
+    "psycopg2-binary>=2.9.10",
+    "reportlab>=4.3.1",
+    "sqlalchemy>=2.0.40",
+    "streamlit>=1.44.1",
+    "exifread>=3.0.0",
+    "python-dotenv>=1.1.0",
+    "openpyxl>=3.1.5",
+    "altair>=5.5.0",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.4",
+    "scikit-learn>=1.6.1",
+]

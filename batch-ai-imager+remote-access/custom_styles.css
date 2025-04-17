@@ -1,0 +1,432 @@
+/* Custom styles for AI Image Analyzer */
+
+/* Base styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #212529;
+    background-color: #f8f9fa;
+}
+
+/* Card styling */
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.card-header h2 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+}
+
+.card-header p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+/* App header */
+.app-header {
+    text-align: center;
+    margin-bottom: 30px;
+    background: linear-gradient(90deg, #7C8AFF 0%, #9CC8FF 100%);
+    padding: 1rem;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+    margin-bottom: 5px;
+    color: #1f77b4; /*Edited color*/
+    color: white !important;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: clamp(1.5rem, 7vw, 2.5rem);
+}
+
+.app-header h3, .app-header .stSubheader {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 400;
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+}
+
+/* Better table styles */
+.styled-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.styled-table th {
+    background-color: #f1f3f5;
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+.styled-table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.styled-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Image container */
+.image-container {
+    max-width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eee;
+    width: 100%;
+}
+
+.image-container img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Button styling */
+.custom-button {
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Status indicators */
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-high {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-medium {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-low {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+
+/* Analysis results display */
+.result-item {
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.result-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Metadata display */
+.metadata-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+/* Navigation buttons */
+.nav-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Tab styling */
+.custom-tabs {
+    margin-top: 0.75rem;
+}
+
+/* Main container styling */
+.main-container {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .card-header h2 {
+        font-size: 20px;
+    }
+
+    /* Adjust columns for mobile */
+    .row-widget.stHorizontal {
+        flex-direction: column;
+    }
+
+    .row-widget.stHorizontal > div {
+        width: 100% !important;
+        margin-bottom: 10px;
+    }
+
+    /* Make tables scrollable on mobile */
+    .styled-table {
+        overflow-x: auto;
+        display: block;
+    }
+    .styled-table table {
+        min-width: auto;
+    }
+
+    /* Adjust form elements */
+    input, select, textarea {
+        font-size: 16px !important;  /* Prevents zoom on iOS */
+    }
+
+    /* Improve button touch targets */
+    button {
+        min-height: 44px;
+        margin-bottom: 10px;
+    }
+
+    /* Adjust metrics display */
+    [data-testid="stMetricValue"] {
+        font-size: 20px !important;
+    }
+
+    /* Adjust sidebar for mobile */
+    .css-1r6slb0, .css-1d391kg, .css-1lcbmhc, .css-12oz5g7 {
+        width: 100% !important;
+    }
+
+    /* Adjust column layouts for mobile */
+    .row-widget.stHorizontal > div {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    /* Force all columns to stack */
+    [data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        margin-bottom: 1rem;
+    }
+
+    /* Make sure inputs and selectboxes are full width */
+    .stTextInput, .stSelectbox, .stTextArea {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    /* Make sure buttons stack nicely */
+    .stButton button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Adjust padding for mobile */
+    .stTabs [data-baseweb="tab-panel"] {
+        padding: 0.5rem !important;
+    }
+
+    /* Ensure tables can be scrolled horizontally on mobile */
+    .stDataFrame {
+        overflow-x: auto;
+    }
+
+    /* Make images responsive */
+    .stImage img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Mobile optimization */
+    .app-header {
+        padding: 10px;
+    }
+
+    .app-header h1 {
+        font-size: 24px;
+        margin-top: 5px;
+    }
+
+    .app-header h2, .app-header h3, .app-header .stSubheader {
+        font-size: 18px;
+    }
+
+    /* Make tables more readable on mobile */
+    .dataframe {
+        font-size: 12px;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    /* Improve image container for mobile */
+    .image-container {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .image-container img {
+        max-width: 100%;
+        height: auto;
+    }
+
+
+    /* Fix tab container spacing */
+    .stTabs {
+        margin-top: 0.5rem;
+    }
+
+    /* Fix font size for mobile */
+    p, div, span {
+        font-size: 14px;
+    }
+
+    /* Ensure export options stack properly */
+    .export-options {
+        flex-direction: column;
+    }
+}
+
+/* Hide overflow on wide tables in mobile */
+.dataframe-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Adjustments for form elements */
+button, input, select, textarea {
+    font-size: 16px !important;  /* Prevents zoom on mobile */
+}
+
+/* Export options layout */
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .export-options {
+        flex-direction: row;
+    }
+}
+
+/* Improve form layout */
+.stTextInput > div {
+    padding-bottom: 10px;
+}
+
+/* Styled buttons */
+.stButton > button {
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .card {
+        background-color: #1e1e1e;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .styled-table th {
+        background-color: #2d2d2d;
+    }
+
+    .styled-table td {
+        border-bottom: 1px solid #333;
+    }
+
+    .styled-table tr:hover {
+        background-color: #2a2a2a;
+    }
+}
+
+/* Custom styling for the application */
+
+/* App header */
+.app-header {
+    background-color: #f0f2f6;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+/* Card styling for clustering */
+.cluster-card {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Chart container for better visualization */
+.chart-container {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Comparison highlighting */
+.diff-highlight {
+    background-color: #ffecb3;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.diff-added {
+    background-color: #c8e6c9;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.diff-removed {
+    background-color: #ffcdd2;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* Cluster groups */
+.cluster-group {
+    border-left: 4px solid #4285f4;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+}

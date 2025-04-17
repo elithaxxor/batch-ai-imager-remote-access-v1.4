@@ -1,0 +1,66 @@
+# AI Image Analyzer - Setup and Installation Instructions
+
+## Environment Setup
+
+1. **Create a Python virtual environment (recommended)**
+
+```bash
+# On Windows
+python -m venv venv
+venv\Scripts\activate
+
+# On macOS/Linux
+python -m venv venv
+source venv/bin/activate
+```
+
+2. **Install dependencies**
+
+```bash
+pip install -r package_requirements.txt
+```
+
+3. **Set up environment variables**
+
+Create a `.env` file in the project root with:
+
+```
+OPENAI_API_KEY=your_openai_api_key
+DATABASE_URL=postgresql://username:password@localhost:5432/image_analyzer_db
+```
+
+4. **Create the database**
+
+- Install PostgreSQL if not already installed
+- Create a new database for the application
+- Run the schema creation script:
+
+```bash
+python -c "import database; database.Base.metadata.create_all(database.engine)"
+```
+
+## Running the Application
+
+Start the Streamlit application:
+
+```bash
+streamlit run app.py
+```
+
+The application will be accessible at http://localhost:5000
+
+## Directory Structure
+
+- **app.py**: Main application file and UI
+- **database.py**: Database models and connection
+- **image_processor.py**: OpenAI integration for image analysis
+- **history_page.py**: History browsing interface
+- **search_page.py**: Search interface
+- **utils.py**: Utility functions
+- **.streamlit/config.toml**: Streamlit configuration
+
+## Troubleshooting
+
+- Ensure PostgreSQL service is running
+- Verify OPENAI_API_KEY is valid and has credits
+- Check database connection string in environment variables
