@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #e6e6e6; }
+        .box { background: #16213e; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        h1, h2 { color: #f9b529; }
+        pre { background: #0f172a; padding: 10px; white-space: pre-wrap; }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        button { background: #f9b529; color: #0f172a; border: none; padding: 8px 16px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Connection Diagnostics</h1>
+        <button onclick="runTests()">Run Tests</button>
+    </div>
+    
+    <div class="box">
+        <h2>Environment Info</h2>
+        <pre id="env"></pre>
+    </div>
+    
+    <div class="box">
+        <h2>API Test</h2>
+        <pre id="api"></pre>
+    </div>
+    
+    <div class="box">
+        <h2>WebSocket Test</h2>
+        <pre id="ws"></pre>
+    </div>
+
+    <script>
+        // Display environment info
+        document.getElementById('env').textContent = JSON.stringify({
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            host: window.location.host,
+            protocol: window.location.protocol
+        }, null, 2);
+
+        function runTests() {
+            // Test API
+            const apiEl = document.getElementById('api');
+            apiEl.textContent = 'Testing API...';
+            
+            fetch('/api/health')
+                .then(res => res.json())
+                .then(data => {
+                    apiEl.innerHTML = `<span class="success">✓ Success</span>\n${JSON.stringify(data, null, 2)}`;
+                })
+                .catch(err => {
+                    apiEl.innerHTML = `<span class="error">✗ Error</span>\n${err.message}`;
+                });
+            
+            // Test WebSocket
+            const wsEl = document.getElementById('ws');
+            wsEl.textContent = 'Testing WebSocket...';
+            
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                const socket = new WebSocket(wsUrl);
+                
+                socket.onopen = () => {
+                    wsEl.innerHTML = `<span class="success">✓ Connected</span>\nWebSocket connection established`;
+                    
+                    socket.send(JSON.stringify({
+                        type: 'ping', 
+                        message: 'Hello from debug page', 
+                        timestamp: new Date().toISOString()
+                    }));
+                };
+                
+                socket.onmessage = (event) => {
+                    wsEl.innerHTML += `\n\nReceived: ${event.data}`;
+                    setTimeout(() => socket.close(), 1000);
+                };
+                
+                socket.onerror = (error) => {
+                    wsEl.innerHTML = `<span class="error">✗ Error</span>\nWebSocket error occurred`;
+                };
+                
+                socket.onclose = (event) => {
+                    wsEl.innerHTML += `\n\nConnection closed. Code: ${event.code}`;
+                };
+            } catch (error) {
+                wsEl.innerHTML = `<span class="error">✗ Error</span>\n${error.message}`;
+            }
+        }
+        
+        // Run tests on load
+        window.onload = runTests;
+    </script>
+</body>
+</html>
