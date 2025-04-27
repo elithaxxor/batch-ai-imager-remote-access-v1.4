@@ -2,6 +2,9 @@ import streamlit as st
 import os
 import pandas as pd
 from database import search_images, get_db, Image
+import logging
+
+logger = logging.getLogger(__name__)
 
 def show_search_page():
     """
@@ -16,7 +19,13 @@ def show_search_page():
     
     # Execute search when a query is entered
     if search_query:
-        results = search_images(search_query)
+        try:
+            with st.spinner("Searching images..."):
+                results = search_images(search_query)
+        except Exception as e:
+            logger.error(f"Error searching images: {e}")
+            st.error("Failed to search images in the database.")
+            return
         
         if not results:
             st.info(f"No results found for '{search_query}'")
@@ -29,13 +38,17 @@ def show_search_page():
             "folder_name": img.folder.name if img.folder else "Unknown",
             "object_name": img.object_name, 
             "confidence": img.confidence,
-            "description_snippet": img.description[:100] + "..." if len(img.description) > 100 else img.description
+            "description_snippet": (img.description[:100] + "...") if img.description and len(img.description) > 100 else (img.description or "")
         } for img in results]
         
         result_df = pd.DataFrame(result_data)
         
         # Display results count
         st.subheader(f"Found {len(results)} results")
+        
+        # Warn if too many results (pagination suggestion)
+        if len(result_df) > 100:
+            st.warning("More than 100 results found. Consider refining your search or adding pagination.")
         
         # Display as a table
         st.dataframe(
@@ -67,8 +80,13 @@ def show_search_result_details(image_id):
     Display details for a specific image from search results
     """
     # Find the image in the database
-    db = next(get_db())
-    image = db.query(Image).filter(Image.id == image_id).first()
+    try:
+        db = next(get_db())
+        image = db.query(Image).filter(Image.id == image_id).first()
+    except Exception as e:
+        logger.error(f"Error retrieving image from database: {e}")
+        st.error("Failed to retrieve image from the database.")
+        return
     
     if not image:
         st.error("Image not found")
@@ -94,19 +112,20 @@ def show_search_result_details(image_id):
         st.markdown(f"**Object Identified:** {image.object_name}")
         st.markdown(f"**Confidence:** {image.confidence:.2f}")
         st.markdown("### Description")
-        st.markdown(image.description)
+        if image.description:
+            st.markdown(image.description)
+        else:
+            st.markdown("No description available")
         
         # Highlight search terms in description
         if 'search_query' in st.session_state and st.session_state.search_query:
-            highlighted_desc = image.description
+            highlighted_desc = image.description if image.description else ""
             for term in st.session_state.search_query.split():
                 if len(term) > 2:  # Only highlight terms with more than 2 characters
                     highlighted_desc = highlighted_desc.replace(
                         term, f"<mark>{term}</mark>"
                     )
             st.markdown(highlighted_desc, unsafe_allow_html=True)
-        else:
-            st.markdown(image.description)
         
         # Additional metadata
         st.markdown("### Metadata")
