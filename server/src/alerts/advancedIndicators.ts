@@ -97,3 +97,31 @@ export function calculateATR(highs: number[], lows: number[], closes: number[], 
   }
   return trs.reduce((a, b) => a + b, 0) / period;
 }
+
+// Correlation (Pearson correlation coefficient)
+export function calculateCorrelation(seriesA: number[], seriesB: number[], window: number = 20): number | null {
+  if (seriesA.length < window || seriesB.length < window) return null;
+  const a = seriesA.slice(-window);
+  const b = seriesB.slice(-window);
+  const meanA = a.reduce((x, y) => x + y, 0) / window;
+  const meanB = b.reduce((x, y) => x + y, 0) / window;
+  let num = 0, denomA = 0, denomB = 0;
+  for (let i = 0; i < window; i++) {
+    num += (a[i] - meanA) * (b[i] - meanB);
+    denomA += (a[i] - meanA) ** 2;
+    denomB += (b[i] - meanB) ** 2;
+  }
+  if (denomA === 0 || denomB === 0) return null;
+  return num / Math.sqrt(denomA * denomB);
+}
+
+// Sharpe Ratio
+export function calculateSharpeRatio(returns: number[], riskFreeRate: number = 0): number | null {
+  if (returns.length < 2) return null;
+  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const excessReturns = returns.map(r => r - riskFreeRate);
+  const meanExcess = excessReturns.reduce((a, b) => a + b, 0) / returns.length;
+  const stdDev = Math.sqrt(excessReturns.reduce((a, b) => a + (b - meanExcess) ** 2, 0) / (returns.length - 1));
+  if (stdDev === 0) return null;
+  return meanExcess / stdDev;
+}

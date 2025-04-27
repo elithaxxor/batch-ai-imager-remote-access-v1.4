@@ -6,7 +6,7 @@ import { sendSlackNotification } from '../notifications/slack';
 import { sendTelegramNotification } from '../notifications/telegram';
 import { sendSMSNotification } from '../notifications/sms_twilio';
 import { logAlertEvent } from './alertHistoryStore';
-import { calculateRSI, detectVolumeSpike, calculateBollingerBands, calculateMACD } from './advancedIndicators';
+import { calculateRSI, detectVolumeSpike, calculateBollingerBands, calculateMACD, calculateStochastic, calculateATR, calculateCorrelation, calculateSharpeRatio } from './advancedIndicators';
 
 // This would be loaded from a database in production
 let priceAlerts: any[] = [];
@@ -90,6 +90,42 @@ async function pollAndNotify() {
             triggered = true;
             alert.lastCross = 'below';
           }
+        }
+      }
+      // Advanced: Stochastic Oscillator
+      if (alert.type === 'stochastic' && Array.isArray(alert.history)) {
+        const stoch = calculateStochastic(alert.history, alert.window, alert.smoothK, alert.smoothD);
+        if (stoch) {
+          if (alert.direction === 'above' && stoch.k > alert.threshold) triggered = true;
+          if (alert.direction === 'below' && stoch.k < alert.threshold) triggered = true;
+        }
+      }
+      // Advanced: ATR Volatility
+      if (alert.type === 'atr' && Array.isArray(alert.history) && Array.isArray(alert.highs) && Array.isArray(alert.lows)) {
+        const atr = calculateATR(alert.history, alert.highs, alert.lows, alert.period);
+        if (atr !== null) {
+          if (alert.direction === 'above' && atr > alert.threshold) triggered = true;
+          if (alert.direction === 'below' && atr < alert.threshold) triggered = true;
+        }
+      }
+      // Advanced: Manual/Custom Note Alert
+      if (alert.type === 'manual' && alert.triggerTimestamp && Date.now() >= alert.triggerTimestamp && !alert.notified) {
+        triggered = true;
+      }
+      // Advanced: Correlation Alert
+      if (alert.type === 'correlation' && Array.isArray(alert.historyA) && Array.isArray(alert.historyB)) {
+        const corr = calculateCorrelation(alert.historyA, alert.historyB, alert.window);
+        if (corr !== null) {
+          if (alert.direction === 'above' && corr > alert.threshold) triggered = true;
+          if (alert.direction === 'below' && corr < alert.threshold) triggered = true;
+        }
+      }
+      // Advanced: Sharpe Ratio Alert
+      if (alert.type === 'sharpe' && Array.isArray(alert.history)) {
+        const sharpe = calculateSharpeRatio(alert.history, alert.riskFreeRate);
+        if (sharpe !== null) {
+          if (alert.direction === 'above' && sharpe > alert.threshold) triggered = true;
+          if (alert.direction === 'below' && sharpe < alert.threshold) triggered = true;
         }
       }
       if (triggered && !alert.notified) {
