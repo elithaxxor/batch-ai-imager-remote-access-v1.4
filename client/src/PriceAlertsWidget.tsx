@@ -3,25 +3,65 @@ import { Card, CardHeader, CardContent, FormGroup, TextField, Button, Select, Me
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 
+/**
+ * PriceAlertsWidget
+ *
+ * React widget for managing price alerts for stocks and crypto.
+ * Features:
+ *   - Displays current alerts, alert status, and alert history
+ *   - Allows users to add new alerts (price, MA cross, RSI, etc.)
+ *   - Supports multi-channel notifications (email, Slack, Telegram, etc.)
+ *   - Uses websockets for real-time updates
+ *
+ * Props:
+ *   notifSettings: Notification preferences for the current user
+ */
 export default function PriceAlertsWidget({ notifSettings }: { notifSettings: any }) {
+  // State for alerts, status, history, and input fields
+  /**
+   * Alerts state: stores the current list of alerts
+   */
   const [alerts, setAlerts] = useState<any[]>([]);
+  /**
+   * Alert status state: stores the current status of each alert
+   */
   const [alertStatus, setAlertStatus] = useState<any[]>([]);
+  /**
+   * Alert history state: stores the recent alert events
+   */
   const [alertHistory, setAlertHistory] = useState<any[]>([]);
+  /**
+   * Input state: stores the values of the input fields for adding new alerts
+   */
   const [input, setInput] = useState({
     type: 'stock', symbol: '', id: '', vs: 'usd', threshold: '', direction: 'above', alertType: 'price', short: 5, long: 20, period: 14, window: 20, numStdDev: 2, fast: 12, slow: 26, signal: 9
   });
+  /**
+   * TradingView params state: stores the TradingView interval and exchange
+   */
   const [tradingViewParams, setTradingViewParams] = useState({ interval: '1m', exchange: '' });
+  /**
+   * Loading state: indicates whether the component is currently loading
+   */
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
 
-  // WebSocket reference
+  // WebSocket reference for real-time updates
   const wsRef = React.useRef<WebSocket | null>(null);
 
+  /**
+   * Fetches the current list of alerts from the backend API.
+   * Sets the alerts state.
+   */
   async function fetchAlerts() {
     const { data } = await axios.get('/api/price-alerts');
     setAlerts(data);
   }
 
+  /**
+   * Adds a new alert using the input state and notifSettings.
+   * Sends a POST request to the backend API.
+   */
   async function addAlert() {
     setLoading(true);
     let alert: any = {

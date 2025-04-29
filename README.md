@@ -72,7 +72,6 @@ See `server/src/alerts/priceAlertScheduler.ts` for the full `PriceAlert` and `Us
 
 ## 🔗 GitHub
 For the latest code, issues, and documentation, visit:
-https://github.com/YOUR_GITHUB_USERNAME/wsb-trading
 
 ---
 
