@@ -22,12 +22,26 @@ function updateMockStocks(): void {
   });
 }
 
+// Store reference to WebSocket server and broadcast function
+let wsServer: WebSocket.Server | null = null;
+
+// Broadcast alert status/history to all clients
+export function broadcastAlertUpdate(data: any) {
+  if (!wsServer) return;
+  const msg = JSON.stringify({ type: 'alertUpdate', ...data, timestamp: new Date().toISOString() });
+  wsServer.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(msg);
+    }
+  });
+}
+
 export function setupWebSocketServer(server: Server): void {
-  const wss = new WebSocket.Server({ server, path: '/ws' });
+  wsServer = new WebSocket.Server({ server, path: '/ws' });
 
   console.log('🔌 WebSocket server initialized');
 
-  wss.on('connection', (socket: WebSocket, request) => {
+  wsServer.on('connection', (socket: WebSocket, request) => {
     const clientId = uuidv4();
     console.log(`🟢 Client connected: ${clientId}`);
 
@@ -118,12 +132,12 @@ export function setupWebSocketServer(server: Server): void {
 
   // Monitor connections
   const monitorInterval = setInterval(() => {
-    console.log(`📊 Active connections: ${wss.clients.size}`);
+    console.log(`📊 Active connections: ${wsServer?.clients.size}`);
   }, 30000);
 
   // Clean up on server close
   server.on('close', () => {
     clearInterval(monitorInterval);
-    wss.close();
+    wsServer?.close();
   });
 }

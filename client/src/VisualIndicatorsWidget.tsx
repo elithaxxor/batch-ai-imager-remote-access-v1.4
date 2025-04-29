@@ -36,6 +36,7 @@ export default function VisualIndicatorsWidget() {
     ema50: boolean;
     ema200: boolean;
     vwma: boolean;
+    adx: boolean;
   }>({
     sma20: true,
     bollinger: true,
@@ -45,7 +46,8 @@ export default function VisualIndicatorsWidget() {
     atr: false,
     ema50: false,
     ema200: false,
-    vwma: false
+    vwma: false,
+    adx: false
   });
   const [assetType, setAssetType] = useState<'stock' | 'crypto'>('stock');
   const [cryptoId, setCryptoId] = useState('bitcoin');
@@ -112,7 +114,8 @@ export default function VisualIndicatorsWidget() {
     { key: 'atr', label: 'ATR 14', color: '#00838f' },
     { key: 'ema50', label: 'EMA 50', color: '#6d4c41' },
     { key: 'ema200', label: 'EMA 200', color: '#3949ab' },
-    { key: 'vwma', label: 'VWMA 20', color: '#009688' }
+    { key: 'vwma', label: 'VWMA 20', color: '#009688' },
+    { key: 'adx', label: 'ADX', color: '#9e9e9e' }
   ];
 
   if (data && ((assetType === 'stock' && data['Time Series (Daily)']) || (assetType === 'crypto' && data.prices))) {
@@ -222,6 +225,29 @@ export default function VisualIndicatorsWidget() {
         return priceVol / volSum;
       });
     })() : undefined;
+    // ADX
+    const adxData = overlays.adx ? closes.map((_: number, i: number, arr: number[]) => {
+      if (i < 14) return null;
+      const highs = data.highs ? data.highs.slice(i - 13, i + 1) : arr.slice(i - 13, i + 1);
+      const lows = data.lows ? data.lows.slice(i - 13, i + 1) : arr.slice(i - 13, i + 1);
+      const closesSlice = arr.slice(i - 13, i + 1);
+      // Use a simple ADX calculation for demo; replace with backend call for accuracy
+      let trs = [], plusDMs = [], minusDMs = [];
+      for (let j = 1; j < highs.length; j++) {
+        const upMove = highs[j] - highs[j - 1];
+        const downMove = lows[j - 1] - lows[j];
+        plusDMs.push(upMove > downMove && upMove > 0 ? upMove : 0);
+        minusDMs.push(downMove > upMove && downMove > 0 ? downMove : 0);
+        trs.push(Math.max(highs[j] - lows[j], Math.abs(highs[j] - closesSlice[j - 1]), Math.abs(lows[j] - closesSlice[j - 1])));
+      }
+      const trSum = trs.reduce((a, b) => a + b, 0);
+      const plusDMSum = plusDMs.reduce((a, b) => a + b, 0);
+      const minusDMSum = minusDMs.reduce((a, b) => a + b, 0);
+      const plusDI = 100 * (plusDMSum / trSum);
+      const minusDI = 100 * (minusDMSum / trSum);
+      const dx = 100 * Math.abs(plusDI - minusDI) / (plusDI + minusDI);
+      return dx;
+    }) : undefined;
     chartData = {
       labels: dates,
       datasets: [
@@ -243,7 +269,8 @@ export default function VisualIndicatorsWidget() {
         ...(overlays.atr ? [{ label: 'ATR 14', data: atr, borderColor: '#00838f', yAxisID: 'atr', pointRadius: 0 }] : []),
         ...(overlays.ema50 ? [{ label: 'EMA 50', data: ema50, borderColor: '#6d4c41', borderDash: [4,2], pointRadius: 0 }] : []),
         ...(overlays.ema200 ? [{ label: 'EMA 200', data: ema200, borderColor: '#3949ab', borderDash: [8,2], pointRadius: 0 }] : []),
-        ...(overlays.vwma ? [{ label: 'VWMA 20', data: vwma, borderColor: '#009688', borderDash: [2,8], pointRadius: 0, hidden: assetType !== 'stock' }] : [])
+        ...(overlays.vwma ? [{ label: 'VWMA 20', data: vwma, borderColor: '#009688', borderDash: [2,8], pointRadius: 0, hidden: assetType !== 'stock' }] : []),
+        ...(overlays.adx ? [{ label: 'ADX', data: adxData, borderColor: '#9e9e9e', yAxisID: 'y2', pointRadius: 0, borderWidth: 2, spanGaps: true, type: 'line', hidden: false }] : [])
       ]
     };
 
@@ -386,6 +413,9 @@ export default function VisualIndicatorsWidget() {
                     },
                     atr: {
                       position: 'right', grid: { drawOnChartArea: false, color: darkMode ? '#333' : '#eee' }, title: { display: true, text: 'ATR', color: darkMode ? '#b2dfdb' : '#00838f' }, ticks: { color: darkMode ? '#b2dfdb' : '#00838f' }
+                    },
+                    y2: {
+                      position: 'right', grid: { drawOnChartArea: false, color: darkMode ? '#333' : '#eee' }, title: { display: true, text: 'ADX', color: darkMode ? '#9e9e9e' : '#9e9e9e' }, ticks: { color: darkMode ? '#9e9e9e' : '#9e9e9e' }
                     }
                   },
                   onClick: (e: any, elements: any, chart: any) => {

@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardContent, FormGroup, TextField, Button, Select, MenuItem } from '@mui/material';
+import { Card, CardHeader, CardContent, FormGroup, TextField, Button, Select, MenuItem, Grid } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 
 export default function PriceAlertsWidget({ notifSettings }: { notifSettings: any }) {
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [alertStatus, setAlertStatus] = useState<any[]>([]);
+  const [alertHistory, setAlertHistory] = useState<any[]>([]);
   const [input, setInput] = useState({
     type: 'stock', symbol: '', id: '', vs: 'usd', threshold: '', direction: 'above', alertType: 'price', short: 5, long: 20, period: 14, window: 20, numStdDev: 2, fast: 12, slow: 26, signal: 9
   });
+  const [tradingViewParams, setTradingViewParams] = useState({ interval: '1m', exchange: '' });
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
+
+  // WebSocket reference
+  const wsRef = React.useRef<WebSocket | null>(null);
 
   async function fetchAlerts() {
     const { data } = await axios.get('/api/price-alerts');
@@ -20,7 +26,8 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
     setLoading(true);
     let alert: any = {
       ...input,
-      notify: notifSettings
+      notify: notifSettings,
+      tradingViewParams: { ...tradingViewParams }
     };
     if (input.alertType === 'price') {
       alert.type = input.type;
@@ -57,9 +64,18 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
       alert.direction = input.direction;
       alert.history = [];
       alert.lastCross = '';
+    } else if (input.alertType === 'adx') {
+      alert.type = 'adx';
+      alert.period = input.period;
+      alert.threshold = parseFloat(input.threshold);
+      alert.highs = [];
+      alert.lows = [];
+      alert.history = [];
+      alert.direction = input.direction;
     }
     await axios.post('/api/price-alerts', alert);
     setInput({ type: 'stock', symbol: '', id: '', vs: 'usd', threshold: '', direction: 'above', alertType: 'price', short: 5, long: 20, period: 14, window: 20, numStdDev: 2, fast: 12, slow: 26, signal: 9 });
+    setTradingViewParams({ interval: '1m', exchange: '' });
     setLoading(false);
     fetchAlerts();
   }
@@ -69,7 +85,39 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
     fetchAlerts();
   }
 
-  useEffect(() => { fetchAlerts(); }, []);
+  // Test alert trigger
+  async function testAlert(idx: number) {
+    await axios.post(`/api/price-alerts/test/${idx}`);
+  }
+
+  // WebSocket connection for real-time updates
+  React.useEffect(() => {
+    fetchAlerts();
+    // Connect to WebSocket server
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+    ws.onopen = () => {
+      // Optionally, send an auth message if needed
+    };
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'alertUpdate') {
+          if (msg.alertStatus) setAlertStatus(msg.alertStatus.lastKnownPrices ? Object.values(msg.alertStatus) : msg.alertStatus);
+          if (msg.alertHistory) setAlertHistory(msg.alertHistory);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    };
+    ws.onerror = () => {};
+    ws.onclose = () => {};
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   return (
     <Card sx={{ margin: '16px 0', boxShadow: theme.palette.mode === 'dark' ? '0 2px 12px #0006' : '0 2px 8px #0002', borderRadius: 12, background: theme.palette.background.paper, color: theme.palette.text.primary }}>
@@ -83,6 +131,7 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
             <MenuItem value="volume_spike">Volume Spike</MenuItem>
             <MenuItem value="bollinger_band">Bollinger Bands</MenuItem>
             <MenuItem value="macd">MACD</MenuItem>
+            <MenuItem value="adx">ADX (Trend Strength)</MenuItem>
           </Select>
           <Select value={input.type} onChange={e => setInput(s => ({ ...s, type: e.target.value }))} size="small" sx={{ minWidth: 120, background: theme.palette.background.default }} inputProps={{ 'aria-label': 'asset-type-select' }}>
             <MenuItem value="stock">Stock (Alpha Vantage)</MenuItem>
@@ -136,6 +185,15 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
                 <MenuItem value="crosses_below_lower">Crosses Below Lower</MenuItem>
               </Select>
             </>
+          ) : input.alertType === 'adx' ? (
+            <>
+              <TextField label="ADX Period" value={input.period} onChange={e => setInput(s => ({ ...s, period: Number(e.target.value) }))} size="small" type="number" sx={{ minWidth: 100, background: theme.palette.background.default }} inputProps={{ 'aria-label': 'adx-period-input' }} />
+              <TextField label="ADX Threshold" value={input.threshold} onChange={e => setInput(s => ({ ...s, threshold: e.target.value }))} size="small" type="number" sx={{ minWidth: 100, background: theme.palette.background.default }} inputProps={{ 'aria-label': 'adx-threshold-input' }} />
+              <Select value={input.direction} onChange={e => setInput(s => ({ ...s, direction: e.target.value }))} size="small" sx={{ minWidth: 120, background: theme.palette.background.default }} inputProps={{ 'aria-label': 'adx-direction-select' }}>
+                <MenuItem value="above">ADX Above</MenuItem>
+                <MenuItem value="below">ADX Below</MenuItem>
+              </Select>
+            </>
           ) : (
             <>
               <TextField label="Fast EMA" value={input.fast} onChange={e => setInput(s => ({ ...s, fast: Number(e.target.value) }))} size="small" type="number" sx={{ minWidth: 100, background: theme.palette.background.default }} inputProps={{ 'aria-label': 'fast-ema-input' }} />
@@ -147,7 +205,33 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
               </Select>
             </>
           )}
+          <Grid item xs={6} sm={3}>
+            <TextField
+              label="TradingView Interval"
+              value={tradingViewParams.interval}
+              onChange={e => setTradingViewParams(p => ({ ...p, interval: e.target.value }))}
+              fullWidth
+              size="small"
+              helperText="e.g. 1m, 5m, 1h, 1d"
+            />
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <TextField
+              label="Exchange (optional)"
+              value={tradingViewParams.exchange}
+              onChange={e => setTradingViewParams(p => ({ ...p, exchange: e.target.value }))}
+              fullWidth
+              size="small"
+              helperText="e.g. NASDAQ, NYSE, BINANCE"
+            />
+          </Grid>
           <Button onClick={addAlert} variant="contained" sx={{ height: 40 }} aria-label="Add Alert">Add Alert</Button>
+          {/* Test Alert Button */}
+          {alerts.length > 0 && (
+            <Button onClick={() => testAlert(0)} variant="outlined" color="secondary" sx={{ ml: 2 }}>
+              Test First Alert
+            </Button>
+          )}
         </FormGroup>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', background: theme.palette.background.paper }}>
@@ -156,24 +240,61 @@ export default function PriceAlertsWidget({ notifSettings }: { notifSettings: an
                 <th style={{ padding: 8 }}>Symbol</th>
                 <th style={{ padding: 8 }}>Price</th>
                 <th style={{ padding: 8 }}>Type</th>
+                <th style={{ padding: 8 }}>Last Price</th>
+                <th style={{ padding: 8 }}>Triggered?</th>
                 <th style={{ padding: 8 }}>Status</th>
                 <th style={{ padding: 8 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {alerts.map((alert, idx) => (
-                <tr key={idx} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
-                  <td style={{ padding: 8 }}>{alert.type === 'stock' ? alert.symbol : `${alert.id}/${alert.vs}`}</td>
-                  <td style={{ padding: 8 }}>{alert.threshold}</td>
-                  <td style={{ padding: 8 }}>{alert.alertType}</td>
-                  <td style={{ padding: 8 }}>{alert.status}</td>
-                  <td style={{ padding: 8 }}>
-                    <Button variant="outlined" size="small" color="error" onClick={() => removeAlert(idx)} aria-label="Remove Alert">Remove</Button>
-                  </td>
-                </tr>
-              ))}
+              {alerts.map((alert, idx) => {
+                const status = alertStatus[idx] || {};
+                return (
+                  <tr key={idx} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
+                    <td style={{ padding: 8 }}>{alert.type === 'stock' ? alert.symbol : `${alert.id}/${alert.vs}`}</td>
+                    <td style={{ padding: 8 }}>{alert.threshold}</td>
+                    <td style={{ padding: 8 }}>{alert.alertType}</td>
+                    <td style={{ padding: 8 }}>{status.lastPrice !== undefined && status.lastPrice !== null ? status.lastPrice : '-'}</td>
+                    <td style={{ padding: 8 }}>{status.triggered ? 'Yes' : 'No'}</td>
+                    <td style={{ padding: 8 }}>{alert.status}</td>
+                    <td style={{ padding: 8 }}>
+                      <Button variant="outlined" size="small" color="error" onClick={() => removeAlert(idx)} aria-label="Remove Alert">Remove</Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+        </div>
+        {/* Alert History Section */}
+        <div style={{ marginTop: 32 }}>
+          <h3 style={{ marginBottom: 8 }}>Recent Alert Events</h3>
+          <div style={{ maxHeight: 200, overflowY: 'auto', border: `1px solid ${theme.palette.divider}`, borderRadius: 8, background: theme.palette.background.default }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: theme.palette.action.hover }}>
+                  <th style={{ padding: 6 }}>Time</th>
+                  <th style={{ padding: 6 }}>Symbol</th>
+                  <th style={{ padding: 6 }}>Type</th>
+                  <th style={{ padding: 6 }}>Price</th>
+                  <th style={{ padding: 6 }}>Message</th>
+                  <th style={{ padding: 6 }}>Users Notified</th>
+                </tr>
+              </thead>
+              <tbody>
+                {alertHistory.map((event, idx) => (
+                  <tr key={idx} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
+                    <td style={{ padding: 6 }}>{new Date(event.timestamp).toLocaleString()}</td>
+                    <td style={{ padding: 6 }}>{event.alert?.symbol || event.alert?.id}</td>
+                    <td style={{ padding: 6 }}>{event.alert?.type}</td>
+                    <td style={{ padding: 6 }}>{event.price}</td>
+                    <td style={{ padding: 6 }}>{event.message}</td>
+                    <td style={{ padding: 6 }}>{(event.notifiedUsers || []).join(', ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </CardContent>
     </Card>

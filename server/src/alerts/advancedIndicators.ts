@@ -125,3 +125,57 @@ export function calculateSharpeRatio(returns: number[], riskFreeRate: number = 0
   if (stdDev === 0) return null;
   return meanExcess / stdDev;
 }
+
+// ADX (Average Directional Index)
+export function calculateADX(highs: number[], lows: number[], closes: number[], period: number = 14): { adx: number, plusDI: number, minusDI: number } | null {
+  if (highs.length < period + 1 || lows.length < period + 1 || closes.length < period + 1) return null;
+  let trs: number[] = [];
+  let plusDMs: number[] = [];
+  let minusDMs: number[] = [];
+  for (let i = 1; i < highs.length; i++) {
+    const upMove = highs[i] - highs[i - 1];
+    const downMove = lows[i - 1] - lows[i];
+    plusDMs.push(upMove > downMove && upMove > 0 ? upMove : 0);
+    minusDMs.push(downMove > upMove && downMove > 0 ? downMove : 0);
+    trs.push(Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - closes[i - 1]),
+      Math.abs(lows[i] - closes[i - 1])
+    ));
+  }
+  // Smooth the values
+  function smooth(arr: number[], period: number): number[] {
+    let smoothed: number[] = [];
+    let sum = arr.slice(0, period).reduce((a, b) => a + b, 0);
+    smoothed[period - 1] = sum;
+    for (let i = period; i < arr.length; i++) {
+      sum = sum - sum / period + arr[i];
+      smoothed[i] = sum;
+    }
+    return smoothed;
+  }
+  const smoothedTR = smooth(trs, period);
+  const smoothedPlusDM = smooth(plusDMs, period);
+  const smoothedMinusDM = smooth(minusDMs, period);
+  let plusDI: number[] = [];
+  let minusDI: number[] = [];
+  let dx: number[] = [];
+  for (let i = period - 1; i < smoothedTR.length; i++) {
+    plusDI[i] = 100 * (smoothedPlusDM[i] / smoothedTR[i]);
+    minusDI[i] = 100 * (smoothedMinusDM[i] / smoothedTR[i]);
+    dx[i] = 100 * Math.abs(plusDI[i] - minusDI[i]) / (plusDI[i] + minusDI[i]);
+  }
+  // ADX is the smoothed DX
+  let adxArr: number[] = [];
+  let adxSum = dx.slice(period - 1, period * 2 - 1).reduce((a, b) => a + b, 0);
+  adxArr[period * 2 - 2] = adxSum / period;
+  for (let i = period * 2 - 1; i < dx.length; i++) {
+    adxArr[i] = (adxArr[i - 1] * (period - 1) + dx[i]) / period;
+  }
+  const lastIdx = adxArr.length - 1;
+  return {
+    adx: adxArr[lastIdx],
+    plusDI: plusDI[lastIdx],
+    minusDI: minusDI[lastIdx]
+  };
+}

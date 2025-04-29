@@ -24,6 +24,60 @@
 - Alerts can be set to notify all users or specific users
 - Backend is structured for future expansion to persistent user management
 
+## 🛠️ Backend Alert Logic & API
+
+The backend price alert system is implemented in TypeScript with clear modularity and verbose documentation. See:
+- `server/src/alerts/priceAlertScheduler.ts`: Main alert scheduler, polling, and notification logic. **Now includes verbose docstrings and comments for all alert types (price, MA cross, RSI, MACD, ADX, etc.)**
+- `server/src/routes/price_alerts.ts`: Express API routes for CRUD, status, and testing of price alerts. **Now fully documented with endpoint docstrings and inline explanations.**
+
+### Example: Adding an ADX Alert
+```json
+{
+  "type": "adx",
+  "symbol": "AAPL",
+  "highs": [/* ... */],
+  "lows": [/* ... */],
+  "history": [/* closes ... */],
+  "period": 14,
+  "threshold": 25,
+  "direction": "above",
+  "notify": { "email": "user@example.com" }
+}
+```
+
+### API Endpoints
+- `GET /api/price-alerts` — List all alerts
+- `GET /api/price-alerts/status` — Status for each alert (symbol, type, threshold, direction)
+- `GET /api/price-alerts/history` — Recent alert events
+- `POST /api/price-alerts` — Add a new alert (see above JSON)
+- `DELETE /api/price-alerts/:idx` — Remove alert by index
+- `POST /api/price-alerts/test/:idx` — Simulate/trigger alert for testing
+
+### Alert Structure
+See `server/src/alerts/priceAlertScheduler.ts` for the full `PriceAlert` and `User` interface documentation. All notification fields and supported indicators are described inline.
+
+## 📝 Development Notes
+- All backend alert logic is now **modular, extensible, and fully documented**.
+- To add new indicators, extend the logic in `priceAlertScheduler.ts` and update the API route as needed.
+- For advanced usage (multi-condition alerts, broadcast to all users, etc.), see the docstrings and comments in the scheduler file.
+
+## 📚 Documentation
+- All major backend modules and API endpoints now include verbose comments and docstrings for easy onboarding and extension.
+- For roadmap, see `MEMORY[0fab6083-99d7-4a66-965a-ee955bbb8877]` (recommendations for indicators, modularity, and UI/UX).
+
+## 🚀 Quickstart
+1. `cd wsb-trading/server && npm install && npm start` (backend)
+2. `cd wsb-trading/client && npm install && npm start` (frontend)
+3. Use the API or UI to add, test, and monitor price alerts!
+
+## 🔗 GitHub
+For the latest code, issues, and documentation, visit:
+https://github.com/YOUR_GITHUB_USERNAME/wsb-trading
+
+---
+
+*Last updated: 2025-04-29*
+
 ## API Endpoints
 - `/api/alphavantage` — Stock data
 - `/api/coingecko` — Crypto data

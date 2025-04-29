@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### 2025-04-29
+
+#### Documentation
+- Expanded and restructured README.md with:
+  - Project overview and purpose
+  - Technical architecture and how it works
+  - Key features and improvement roadmap
+  - Clearer build, deployment, and usage instructions
+  - New section on rooms for improvement
+
 ### 2025-04-27
 
 #### Major Improvements

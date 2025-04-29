@@ -13,8 +13,14 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "__tests__/**/*",
+    "**/__tests__/**/*",
+    "**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

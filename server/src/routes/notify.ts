@@ -14,7 +14,7 @@ router.post('/email', async (req, res) => {
     await sendEmailNotification(to, subject, text);
     res.json({ success: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: (e as Error).message });
   }
 });
 
@@ -24,7 +24,7 @@ router.post('/discord', async (req, res) => {
     await sendDiscordNotification(webhookUrl, message);
     res.json({ success: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: (e as Error).message });
   }
 });
 
@@ -34,7 +34,7 @@ router.post('/push', async (req, res) => {
     await sendPushNotification(userKey, message);
     res.json({ success: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: (e as Error).message });
   }
 });
 
