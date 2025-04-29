@@ -63,10 +63,14 @@ The app will be available at [http://localhost:5000](http://localhost:5000) by d
 
 ## Recent Updates (2025-04-29)
 
+- Improved PriceAlertsWidget:
+  - Added error and success user feedback for alert actions (add, remove, test).
+  - Reset alert input state after adding to prevent stale data.
+  - Disabled Add Alert and Test Alert buttons while loading.
+  - Added error handling for all API calls for reliability.
 - Expanded README with detailed project overview, purpose, architecture, and improvement roadmap.
 - Added section on rooms for improvement.
-
-See `CHANGELOG.md` for full update history.
+- See `CHANGELOG.md` for full update history.
 
 ## Learn More
 

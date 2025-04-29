@@ -12,6 +12,12 @@
   - Clearer build, deployment, and usage instructions
   - New section on rooms for improvement
 
+#### PriceAlertsWidget Improvements
+- Added error and success user feedback for all alert actions (add, remove, test).
+- Reset input state after adding an alert to prevent stale or incorrect data.
+- Disabled Add Alert and Test Alert buttons while loading to prevent duplicate submissions.
+- Added error handling for all API calls (add, remove, fetch, test) for reliability and user feedback.
+
 ### 2025-04-27
 
 #### Major Improvements
